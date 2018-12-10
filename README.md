@@ -1,5 +1,5 @@
 # About
-Training a 4 legged agent to walk in Crawler Unity Environment
+Training a 2 competing RL agents to play Tennis using MADDPG
 
 ## Crawler Unity Environment
 
