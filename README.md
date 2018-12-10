@@ -1,5 +1,5 @@
 # About
-Training a 2 competing RL agents to play Tennis using MADDPG
+Training a pair of competing RL agents to play Tennis using MADDPG
 
 ## Crawler Unity Environment
 
