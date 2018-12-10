@@ -1,24 +1,25 @@
 # About
 Training a pair of competing RL agents to play Tennis using MADDPG
 
-## Crawler Unity Environment
+## Tennis Unity Environment
 
-![crawler](images/crawler.png)
+![Tennis](images/tennis)
 
-* Set-up: A creature with 4 arms and 4 forearms.
-* Goal: The agents must move its body toward the goal direction without falling.
-  * `CrawlerStaticTarget` - Goal direction is always forward.
-  * `CrawlerDynamicTarget`- Goal direction is randomized.
-* Agents: The environment contains 3 agent linked to a single Brain.
+* Set-up: Two-player game where agents control rackets to bounce ball over a
+  net.
+* Goal: The agents must bounce ball between one another while not dropping or
+  sending ball out of bounds.
+* Agents: The environment contains two agent linked to a single Brain named
+  TennisBrain. After training you can attach another Brain named MyBrain to one
+  of the agent to play against your trained model.
 * Agent Reward Function (independent):
-  * +0.03 times body velocity in the goal direction.
-  * +0.01 times body direction alignment with goal direction.
+  * +0.1 To agent when hitting ball over net.
+  * -0.1 To agent who let ball hit their ground, or hit ball out of bounds.
 * Brains: One Brain with the following observation/action space.
-  * Vector Observation space: 117 variables corresponding to position, rotation,
-    velocity, and angular velocities of each limb plus the acceleration and
-    angular acceleration of the body.
-  * Vector Action space: (Continuous) Size of 20, corresponding to target
-    rotations for joints.
+  * Vector Observation space: 8 variables corresponding to position and velocity
+    of ball and racket.
+  * Vector Action space: (Continuous) Size of 2, corresponding to movement
+    toward net or away from net, and jumping.
   * Visual Observations: None.
-* Reset Parameters: None
-* Benchmark Mean Reward: 2000
+* Reset Parameters: One, corresponding to size of ball.
+* Benchmark Mean Reward: 2.5
