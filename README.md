@@ -1,5 +1,5 @@
 # About
-Training a pair of competing RL agents to play Tennis using MADDPG
+Training a pair of competing RL agents to play Tennis using MADDPG. The environment requires the agents to learn **both **competitive and cooperative strategies** in order to maximize their respective cummulative rewards.
 
 ## Tennis Unity Environment
 
