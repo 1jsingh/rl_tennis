@@ -63,8 +63,11 @@ class Agent():
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
 
-        #self.soft_update(self.critic_local, self.critic_target, 1.0)
-        #self.soft_update(self.actor_local, self.actor_target, 1.0)
+        self.soft_update(self.critic_local[0], self.critic_target[0], 1.0)
+        self.soft_update(self.actor_local[0], self.actor_target[0], 1.0)
+
+        self.soft_update(self.critic_local[1], self.critic_target[1], 1.0)
+        self.soft_update(self.actor_local[1], self.actor_target[1], 1.0)
     
     def step(self,state, action, reward, next_state, done):
         """Save experience in replay memory, and use random sample from buffer to learn."""
@@ -126,16 +129,16 @@ class Agent():
 
         # ---------------------------- update critic2 ---------------------------- #
         # Get predicted Q values from target models
-        Q_targets_next2 = self.critic_target[0](next_states2, actions_next2, next_states1, actions_next1)
+        Q_targets_next2 = self.critic_target[1](next_states2, actions_next2, next_states1, actions_next1)
         # Compute Q targets for current states (y_i)
         Q_targets2 = rewards2 + (gamma * Q_targets_next2 * (1 - dones2))
         # Compute critic loss
-        Q_expected2 = self.critic_local[0](states1, actions1, states2, actions2)
+        Q_expected2 = self.critic_local[1](states2, actions2, states1, actions1)
         critic_loss2 = F.mse_loss(Q_expected2, Q_targets2)
         # Minimize the loss
-        self.critic_optimizer[0].zero_grad()
+        self.critic_optimizer[1].zero_grad()
         critic_loss2.backward()
-        self.critic_optimizer[0].step()
+        self.critic_optimizer[1].step()
 
 
         # ---------------------------- get actions_pred ---------------------------- #
@@ -183,7 +186,7 @@ class Agent():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.8):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
