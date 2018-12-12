@@ -8,7 +8,7 @@ The environment requires the agents to learn **both competitive and cooperative 
 #### Single DDPG agent for both players
 ![trained_agent](images/trained_agent_single)
 
-#### Separate DDPG agent for both players
+#### Separate DDPG agents for both players
 ![trained_agent](images/trained_agent_multi)
 
 ## Tennis Unity Environment
