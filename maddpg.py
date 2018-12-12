@@ -63,11 +63,11 @@ class Agent():
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
 
-        self.soft_update(self.critic_local[0], self.critic_target[0], 1.0)
-        self.soft_update(self.actor_local[0], self.actor_target[0], 1.0)
+        #self.soft_update(self.critic_local[0], self.critic_target[0], 1.0)
+        #self.soft_update(self.actor_local[0], self.actor_target[0], 1.0)
 
-        self.soft_update(self.critic_local[1], self.critic_target[1], 1.0)
-        self.soft_update(self.actor_local[1], self.actor_target[1], 1.0)
+        #self.soft_update(self.critic_local[1], self.critic_target[1], 1.0)
+        #self.soft_update(self.actor_local[1], self.actor_target[1], 1.0)
     
     def step(self,state, action, reward, next_state, done):
         """Save experience in replay memory, and use random sample from buffer to learn."""
@@ -166,7 +166,7 @@ class Agent():
         self.soft_update(self.actor_local[0], self.actor_target[0], TAU)
 
         # ----------------------- update target2 networks ----------------------- #
-        #self.soft_update(self.critic_local[1], self.critic_target[1], TAU)
+        self.soft_update(self.critic_local[1], self.critic_target[1], TAU)
         self.soft_update(self.actor_local[1], self.actor_target[1], TAU)
 
 
@@ -186,11 +186,13 @@ class Agent():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.8):
+    def __init__(self, size, seed, mu=0., theta=0.15,sigma_start=1.0,sigma_decay= .9999,sigma_end=.1):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
-        self.sigma = sigma
+        self.sigma = sigma_start
+        self.sigma_decay = sigma_decay
+        self.sigma_end = sigma_end
         self.seed = random.seed(seed)
         self.size = size
         self.reset()
@@ -204,6 +206,9 @@ class OUNoise:
         x = self.state
         dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(self.size)   #np.array([random.random() for i in range(len(x))])
         self.state = x + dx
+
+        # decay sigma
+        self.sigma = max(self.sigma*self.sigma_decay,self.sigma_end)
         return self.state
 
 class ReplayBuffer:
