@@ -55,10 +55,10 @@ class MultiAgent():
 
         self.time_step+=1
 
-    def act(self, states):
+    def act(self, states, add_noise=True):
         actions = []
         for i in range(self.num_agents):
-            actions.append(self.agents[i].act(states[i]))
+            actions.append(self.agents[i].act(states[i],add_noise=add_noise))
 
         return np.array(actions)
 
