@@ -2,3 +2,4 @@
 *.app
 *.log
 unity_envs
+__pycache__
