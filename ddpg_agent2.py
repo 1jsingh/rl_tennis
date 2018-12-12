@@ -10,9 +10,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 BUFFER_SIZE = int(1e5)  # replay buffer size
-BATCH_SIZE = 128        # minibatch size
+BATCH_SIZE = 512        # minibatch size
 GAMMA = 0.99            # discount factor
-TAU = 1e-3              # for soft update of target parameters
+TAU = 2e-1              # for soft update of target parameters
 LR_ACTOR = 1e-4         # learning rate of the actor 
 LR_CRITIC = 1e-3        # learning rate of the critic
 WEIGHT_DECAY = 0        # L2 weight decay
@@ -100,8 +100,8 @@ class Agent():
         # Replay memory
         self.memory = memory
 
-        #self.soft_update(self.critic_local, self.critic_target, 1.0)
-        #self.soft_update(self.actor_local, self.actor_target, 1.0)
+        self.soft_update(self.critic_local, self.critic_target, 1.0)
+        self.soft_update(self.actor_local, self.actor_target, 1.0)
     
     def step(self):
         """Save experience in replay memory, and use random sample from buffer to learn."""
@@ -182,11 +182,13 @@ class Agent():
 class OUNoise:
     """Ornstein-Uhlenbeck process."""
 
-    def __init__(self, size, seed, mu=0., theta=0.15, sigma=0.2):
+    def __init__(self, size, seed, mu=0., theta=0.15, sigma_start=1.0,sigma_decay= .9999,sigma_end=.1):
         """Initialize parameters and noise process."""
         self.mu = mu * np.ones(size)
         self.theta = theta
-        self.sigma = sigma
+        self.sigma = sigma_start
+        self.sigma_decay = sigma_decay
+        self.sigma_end = sigma_end
         self.seed = random.seed(seed)
         self.reset()
 
@@ -199,6 +201,9 @@ class OUNoise:
         x = self.state
         dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
         self.state = x + dx
+
+        # decay sigma
+        self.sigma = max(self.sigma*self.sigma_decay,self.sigma_end)
         return self.state
 
 class ReplayBuffer:
