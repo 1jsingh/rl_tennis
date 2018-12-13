@@ -24,6 +24,14 @@ The task is episodic, and in order to solve the environment, your agents must ge
 
 The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
 
+## Project Structure
+
+3 different solutions to this problem have been implemented in this repo:
+* `ddpg`: single ddpg agent with shared actor and critic models
+* `ddpg_multi`: multiple DDPG agents with separate actor and critic models
+* `maddpg`: implementation of the MADDPG algorithm with separate DDPG agents, where the centralized critic has access to combined action and observation states of all agents.
+
+
 ### Getting Started
 
 1. Download the environment from one of the links below.  You need only select the environment that matches your operating system:
