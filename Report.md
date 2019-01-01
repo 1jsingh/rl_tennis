@@ -38,6 +38,6 @@ The Avg reward for last 100 episodes = 0.9036
 ![reward_plot](images/reward_plot_ddpg_multi)
 
 ### Future directions for improvement
-* Use a prioritised experience replay
+* ~~Use a prioritised experience replay~~
 * Add noise to Actor, Critic hyperparameters
 * Use [Curiosity driven exploration](https://pathak22.github.io/large-scale-curiosity/) strategies
