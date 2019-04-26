@@ -3,3 +3,4 @@
 *.log
 unity_envs
 __pycache__
+.ipynb_checkpoints
