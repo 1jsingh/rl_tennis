@@ -1,60 +1,125 @@
 # About
-Training a pair of competing RL agents to play Tennis using MADDPG. 
+Training a pair of competing RL agents to play Tennis using [MADDPG](https://arxiv.org/abs/1706.02275) algorithm. 
 
 The environment requires the agents to learn **both competitive and cooperative strategies** in order to maximize their respective cummulative rewards.
 
-## Trained agent Demo
+## Table of Contents
 
-#### Single DDPG agent for both players
-![trained_agent](images/trained_agent_single)
+* [Trained Agent Demo](#trained-agent-demo)
+* [Tennis Unity Environment](#tennis-unity-environment)
+* [Setup](#setup)
+    * [System Configuration](#system-configuration)
+    * [Environment Setup](#environment-setup)
+    * [Instructions for getting started](#instructions-for-getting-started)
+    * [Project Structure](#project-structure)
+* [Algorithm Details](#algorithm-details)
+* [Reward Curve](#reward-curve)
+* [Bibliography](#bibliography)
 
-#### Separate DDPG agents for both players
-![trained_agent](images/trained_agent_multi)
+## Trained Agent Demo
+
+* Single ddpg agent with shared actor and critic model for both players
+![trained_agent](images/trained_agent-ddpg.gif)
+
+* Separate DDPG agents with independent actor and critic models
+![trained_agent](images/trained_agent-ddpg_multi.gif)
 
 ## Tennis Unity Environment
 
-In this environment, two agents control rackets to bounce a ball over a net. If an agent hits the ball over the net, it receives a reward of +0.1.  If an agent lets a ball hit the ground or hits the ball out of bounds, it receives a reward of -0.01.  Thus, the goal of each agent is to keep the ball in play.
+* Set-up: Two-player game where agents control rackets to bounce ball over a
+  net.
+* Goal: The agents must bounce ball between one another while not dropping or
+  sending ball out of bounds.
+* Agents: The environment contains two agent linked to a single Brain named
+  TennisBrain. After training you can attach another Brain named MyBrain to one
+  of the agent to play against your trained model.
+* Agent Reward Function (independent):
+  * +0.1 To agent when hitting ball over net.
+  * -0.01 To agent who let ball hit their ground, or hit ball out of bounds.
+* Brains: One Brain with the following observation/action space.
+  * Vector Observation space: 8 variables corresponding to position and velocity
+    of ball and racket.
+  * Vector Action space: (Continuous) Size of 2, corresponding to movement
+    toward net or away from net, and jumping.
+  * Visual Observations: None.
+* Reset Parameters: One, corresponding to size of ball.
+* Benchmark Mean Reward: 2.5
 
-The observation space consists of 8 variables corresponding to the position and velocity of the ball and racket. Each agent receives its own, local observation.  Two continuous actions are available, corresponding to movement toward (or away from) the net, and jumping. 
 
-The task is episodic, and in order to solve the environment, your agents must get an average score of +0.5 (over 100 consecutive episodes, after taking the maximum over both agents). Specifically,
+# Setup
 
-- After each episode, we add up the rewards that each agent received (without discounting), to get a score for each agent. This yields 2 (potentially different) scores. We then take the maximum of these 2 scores.
-- This yields a single **score** for each episode.
+## System Configuration
+The project was built with the following configuration:
 
-The environment is considered solved, when the average (over 100 episodes) of those **scores** is at least +0.5.
+* Ubuntu 16.04
+* CUDA 10.0
+* CUDNN 7.4
+* Python 3.6 (currently ml-agents unity package does not work with python=3.7)
+* Pytorch 1.0
 
-## Project Structure
+Though not tested, the project can still be expected to work out of the box for most reasonably deviant configurations.
 
-3 different solutions to this problem have been implemented in this repo:
-* `ddpg`: single ddpg agent with shared actor and critic models
-* `ddpg_multi`: multiple DDPG agents with separate actor and critic models
-* `maddpg`: implementation of the MADDPG algorithm with separate DDPG agents, where the centralized critic has access to combined action and observation states of all agents
-* `unity_envs`: directory for downloading and storing the unity envs for your system
+## Environment Setup
 
+* Create separate virtual environment for the project using the provided `environment.yml` file
+```
+conda create -f environment.yml
+conda activate tennis
+```
 
-### Getting Started
+## Instructions for getting started!
 
-1. Clone the repository (if you haven't already!), and navigate to the `python/` folder.  Then, install several dependencies.
+1. Clone the repository (if you haven't already!)
 ```bash
 git clone https://github.com/1jsingh/rl_tennis.git
-cd rl_tennis/python
-pip install .
+cd rl_tennis
 ```
 
 2. Download the environment from one of the links below.  You need only select the environment that matches your operating system:
-    - Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Linux.zip)
-    - Mac OSX: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis.app.zip)
-    - Windows (32-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Windows_x86.zip)
-    - Windows (64-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Windows_x86_64.zip)
 
-    (_For AWS_) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P3/Tennis/Tennis_Linux_NoVis.zip) to obtain the "headless" version of the environment.  You will **not** be able to watch the agent without enabling a virtual screen, but you will be able to train the agent.  (_To watch the agent, you should follow the instructions to [enable a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above._)
+    
+    - Linux: [click here](https://drive.google.com/open?id=1i-qpk2KX2ZAjGWL9PMePhG7a6oaQ8aMV)
+    - Mac OSX: [click here](https://drive.google.com/open?id=1uJc9juUlC2OmMMD6extaQnC2HhuJbcXN)
 
-3. Place downloaded zip file in the main folder and unzip (or decompress) the file. 
+    (_For AWS_) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://drive.google.com/open?id=1VAE9YsjjJzJjUKVUR_OLsfXL2KipqcV_) to obtain the "headless" version of the environment.  You will **not** be able to watch the agent without enabling a virtual screen, but you will be able to train the agent.  (_To watch the agent, you should follow the instructions to [enable a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above._)
+       
+3. Place the downloaded file in the `unity_envs` directory and unzip it.
+  ```
+  mkdir unity_envs && cd unity_envs
+  unzip Tennis_Linux.zip
+  ```
 
-### Instructions
+4. Follow along with `maddpg/Tennis-maddpg.ipynb` to train your own RL agent. 
 
-Follow the instructions in `Tennis.ipynb` to get started with training your own agent!  
 
-### Learning Algorithm
-For detailed explanation of the learning algorithm and the reward curve, please refer to [this file](Report.md)
+## Project Structure
+
+Besides the MADDPG algorithm the repo also contains 2 other solutions for the Tennis Unity environment:
+
+* `maddpg`: implementation of the [MADDPG](https://arxiv.org/abs/1706.02275) algorithm consisting independent but centralized critic for each agent with access to combined action and observation states of all agents.
+* `ddpg`: single ddpg agent with shared actor and critic model for the 2 players
+* `ddpg_multi`: separate DDPG agents with independent actor and critic models
+* `unity_envs`: directory for downloading and storing the unity envs for your system
+* `trained_models`: directory for storing trained models
+
+# Algorithm Details
+
+The Multi Agent Deep Deterministic Policy Gradient (**MADDPG**) algorithm consists of multiple agents with separate actor and critic models. Unlike multiple DDPG models (refer `ddpg_multi`), MADDPG requires that all critics have access to the combined action and observation space of all agents. Doing so, enables the agents to coordinate in a much more sophisticated fashion than independent DDPG agents.
+
+For **comparison** purposes, the repo also contains 2 separate solutions to the tennis unity environment
+
+* **DDPG** : Using the fact that environment is highly symmetrical, this solution tries to use the same DDPG agent for both the players.
+* **DDPG-multi**: This is the standard point of comparison to the MADDPG algorithm. The solution consists of using separate and decentralized DDPG agents for the 2 players.
+
+## Reward Curve
+
+* **MADDPG**
+  <img src='images/reward_curve-maddpg.png' alt='reward_curve-maddpg'>
+
+* **DDPG-multi**: multiple DDPG agents with independent actor and critic models
+  <img src='images/reward_curve-ddpg_multi.png' alt='reward_curve-ddpg_multi'>
+
+# Bibliography
+
+1. <cite>Lowe, Ryan, et al. "Multi-agent actor-critic for mixed cooperative-competitive environments." Advances in Neural Information Processing Systems. 2017.</cite>
+2. <cite>Learning to Cooperate, Compete, and Communicate: https://openai.com/blog/learning-to-cooperate-compete-and-communicate/</cite>
