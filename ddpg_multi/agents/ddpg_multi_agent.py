@@ -3,29 +3,77 @@ import random
 import copy
 from collections import namedtuple, deque
 
-from model import Actor, Critic
+from agents.model import Actor, Critic
 
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-BUFFER_SIZE = int(1e6)  # replay buffer size
+BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 512        # minibatch size
 GAMMA = 0.99            # discount factor
-TAU = 1e-2              # for soft update of target parameters
+TAU = 1e-3              # for soft update of target parameters
 LR_ACTOR = 1e-4         # learning rate of the actor 
 LR_CRITIC = 1e-3        # learning rate of the critic
 WEIGHT_DECAY = 0        # L2 weight decay
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-LEARN_EVERY=20
-LEARN_TIMES=10
+
+class MultiAgent():
+
+    def __init__(self, state_size, action_size, num_agents, num_parallel_env, agent_indices, random_seed):
+
+        self.num_agents = num_agents
+        self.num_parallel_env = num_parallel_env
+        self.agent_indices = agent_indices
+
+        self.state_size = state_size
+        self.action_size = action_size
+
+
+        # define all the agents
+        self.agents = []
+        for i in range(self.num_agents):
+            agent = Agent(state_size, action_size, random_seed)
+            self.agents.append(agent)
+
+        # counter for time steps
+        self.time_step = 0
+
+
+    def step(self, state, action, reward, next_state, done):
+        for i in range(self.num_agents):
+            for j in range(self.num_parallel_env):
+                idx = i*self.num_parallel_env + j
+                self.agents[i].memory.add(state[idx], action[idx], reward[idx], next_state[idx], done[idx])
+        
+        # take update step for each of the agent
+        for i in range(self.num_agents):
+            self.agents[i].step()
+    
+        # increment time step counter
+        self.time_step+=1
+
+    def act(self, states, add_noise=True):
+        actions = np.zeros((states.shape[0],self.action_size))
+        for i in range(self.num_agents):
+            state = states[i*self.num_parallel_env: (i+1)*self.num_parallel_env]
+            actions[i*self.num_parallel_env: (i+1)*self.num_parallel_env] = self.agents[i].act(state,add_noise=add_noise)
+
+        return actions
+
+    def reset(self):
+        for i in range(self.num_agents):
+            self.agents[i].reset()
+        
+        # reset time step count
+        self.time_step=0
 
 class Agent():
     """Interacts with and learns from the environment."""
     
-    def __init__(self,state_size, action_size,num_agents,num_parallel_env,agent_indices,random_seed):
+    def __init__(self, state_size, action_size, random_seed):
         """Initialize an Agent object.
         
         Params
@@ -48,52 +96,33 @@ class Agent():
         self.critic_target = Critic(state_size, action_size, random_seed).to(device)
         self.critic_optimizer = optim.Adam(self.critic_local.parameters(), lr=LR_CRITIC, weight_decay=WEIGHT_DECAY)
 
-        # num of agents
-        self.num_agents = num_agents
-        self.num_parallel_env = num_parallel_env
-        self.agent_indices = agent_indices
-
         # Noise process
-        self.noise = OUNoise((self.num_agents*self.num_parallel_env,action_size), random_seed)
+        self.noise = OUNoise(action_size, random_seed)
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
 
-        # counter for time steps
-        self.time_step = 0
-
-        #self.soft_update(self.critic_local, self.critic_target, 1.0)
-        #self.soft_update(self.actor_local, self.actor_target, 1.0)
+        self.soft_update(self.critic_local, self.critic_target, 1.0)
+        self.soft_update(self.actor_local, self.actor_target, 1.0)
     
-    def step(self,state, action, reward, next_state, done):
-        """Save experience in replay memory, and use random sample from buffer to learn."""
-        for i in range(self.num_agents*self.num_parallel_env):
-            # Save experience / reward
-            self.memory.add(state[i], action[i], reward[i], next_state[i], done[i])
-        
+    def step(self):
+        """Use random sample from buffer to learn."""
+
         # Learn, if enough samples are available in memory
         if len(self.memory) > BATCH_SIZE:
             experiences = self.memory.sample()
             self.learn(experiences, GAMMA)
 
-        # increase time step count
-        self.time_step+=1
-
-    def act(self, states, add_noise=True):
+    def act(self, state, add_noise=True):
         """Returns actions for given state as per current policy."""
-        states = torch.from_numpy(states).float().to(device)
-        actions = np.zeros((self.num_agents*self.num_parallel_env, self.action_size))
+        state = torch.from_numpy(state).float().to(device)
         self.actor_local.eval()
         with torch.no_grad():
-            for agent_num, state in enumerate(states):
-                action = self.actor_local(state).cpu().data.numpy()
-                actions[agent_num, :] = action
+            action = self.actor_local(state).cpu().data.numpy()
         self.actor_local.train()
-        
         if add_noise:
-            actions += self.noise.sample()
-        
-        return np.clip(actions, -1, 1)
+            action += self.noise.sample()
+        return np.clip(action, -1, 1)
 
     def reset(self):
         self.noise.reset()
@@ -163,7 +192,6 @@ class OUNoise:
         self.sigma_decay = sigma_decay
         self.sigma_end = sigma_end
         self.seed = random.seed(seed)
-        self.size = size
         self.reset()
 
     def reset(self):
@@ -173,7 +201,7 @@ class OUNoise:
     def sample(self):
         """Update internal state and return it as a noise sample."""
         x = self.state
-        dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(self.size)#np.array([random.random() for i in range(len(x))])
+        dx = self.theta * (self.mu - x) + self.sigma * np.array([random.random() for i in range(len(x))])
         self.state = x + dx
 
         # decay sigma
