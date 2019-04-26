@@ -18,11 +18,7 @@ The environment requires the agents to learn **both competitive and cooperative 
 
 ## Trained Agent Demo
 
-* Single ddpg agent with shared actor and critic model for both players
-![trained_agent](images/trained_agent-ddpg.gif)
-
-* Separate DDPG agents with independent actor and critic models
-![trained_agent](images/trained_agent-ddpg_multi.gif)
+![trained_agent](images/trained_agent.gif)
 
 ## Tennis Unity Environment
 
@@ -118,6 +114,8 @@ For **comparison** purposes, the repo also contains 2 separate solutions to the 
 
 * **DDPG-multi**: multiple DDPG agents with independent actor and critic models
   <img src='images/reward_curve-ddpg_multi.png' alt='reward_curve-ddpg_multi'>
+
+***Note: MADDPG agent learns faster than independent DDPG agents***
 
 # Bibliography
 
